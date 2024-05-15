@@ -13,6 +13,7 @@ from .serializers import ImageSerializer, PdfSerializer, MessageSerializer
 from .serializers import UserSerializer, DoctorSerializer
 from .gemini_api import model
 from requests.exceptions import ConnectionError
+from gemini import Solution
 
 # from .chat import get_response_medassist
 
