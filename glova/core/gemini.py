@@ -49,10 +49,9 @@ class Solution(object):
           
                         
         
-    def geminiResponce(self, imagePath : str) -> str:
+    def geminiResponce(self, image : str) -> str:
         try:
-            imageFile=PIL.Image.open(imagePath)
-            self._response=self._model.generate_content([self._template.format(skinType=self._skinType, skinTone=self._skinTone), imageFile], stream=False)
+            self._response=self._model.generate_content([self._template.format(skinType=self._skinType, skinTone=self._skinTone), image], stream=False)
                 
             for chunk in self._response:
                 self._response_ = ''.join(chunk.text) 

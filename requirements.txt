@@ -9,5 +9,7 @@ pymongo==3.12.1
 pytz
 python-dotenv~=1.0.0
 vertexai
+urllib
+cloudinary==1.40.0
 
 pypdf2~=3.0.1

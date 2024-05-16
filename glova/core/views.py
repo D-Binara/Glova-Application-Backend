@@ -6,6 +6,12 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from PIL import Image
+import urllib
+import cloudinary.uploader
+import numpy as np
+import cv2 as cv
+
 
 from .extract_text import extract_text_from_pdf
 from .gemini import Solution
@@ -103,22 +109,22 @@ def post_image(request):
     if posts_serializer.is_valid():
         # Save the image
         posts_serializer.save()
-
-        # Get the path of the saved image
-        image_path = posts_serializer.data.get('image')  # Assuming 'image' is the field name
-
-        # Initialize your Solution class
-        solution = Solution(skinType="Oily skin", skinTone=" white")  # Provide appropriate values for skinType and skinTone
-
-        # Generate response using the uploaded image
-        response_text = solution.geminiResponce(image_path)
-
-        if response_text:
-            # If response is generated successfully, return it
-            return Response({'response': response_text}, status=status.HTTP_200_OK)
-        else:
-            # If an error occurs during generation, return an error response
-            return Response({'error': 'Failed to generate response'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        file = request.data.get('picture')
+        upload_data = cloudinary.uploader.upload(file)
+        #print(upload_data)
+        img = upload_data['url']
+        
+        req = urllib.request.urlopen(img)
+        arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+        image = cv.imdecode(arr, -1) 
+        
+        solution=Solution('Oily', 'Golden')
+        result=solution.geminiResponce(image=image)
+        
+        return Response({
+            'image_data': posts_serializer.data,
+            'result': result
+        }, status=status.HTTP_201_CREATED)
     else:
         # If serializer validation fails, return the errors
         return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
