@@ -60,7 +60,7 @@ WSGI_APPLICATION = 'glova.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'MidAssist',
+        'NAME': 'Glova_New',
     }
 }
 

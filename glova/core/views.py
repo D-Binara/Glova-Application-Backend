@@ -8,12 +8,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .extract_text import extract_text_from_pdf
+from .gemini import Solution
 from .models import Image, User, Doctor
 from .serializers import ImageSerializer, PdfSerializer, MessageSerializer
 from .serializers import UserSerializer, DoctorSerializer
 from .gemini_api import model
 from requests.exceptions import ConnectionError
-from gemini import Solution
+
 
 # from .chat import get_response_medassist
 
@@ -100,10 +101,26 @@ def get_image(request):
 def post_image(request):
     posts_serializer = ImageSerializer(data=request.data)
     if posts_serializer.is_valid():
+        # Save the image
         posts_serializer.save()
-        return Response(posts_serializer.data, status=status.HTTP_201_CREATED)
+
+        # Get the path of the saved image
+        image_path = posts_serializer.data.get('image')  # Assuming 'image' is the field name
+
+        # Initialize your Solution class
+        solution = Solution(skinType="Oily skin", skinTone=" white")  # Provide appropriate values for skinType and skinTone
+
+        # Generate response using the uploaded image
+        response_text = solution.geminiResponce(image_path)
+
+        if response_text:
+            # If response is generated successfully, return it
+            return Response({'response': response_text}, status=status.HTTP_200_OK)
+        else:
+            # If an error occurs during generation, return an error response
+            return Response({'error': 'Failed to generate response'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
-        print('error', posts_serializer.errors)
+        # If serializer validation fails, return the errors
         return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
