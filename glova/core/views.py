@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from PIL import Image
 import urllib
-import cloudinary.uploader
+from cloudinary import uploader
 import numpy as np
 import cv2 as cv
 
@@ -110,7 +110,7 @@ def post_image(request):
         # Save the image
         posts_serializer.save()
         file = request.data.get('picture')
-        upload_data = cloudinary.uploader.upload(file)
+        upload_data = uploader.upload(file)
         #print(upload_data)
         img = upload_data['url']
         
