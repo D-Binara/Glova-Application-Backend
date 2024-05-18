@@ -119,7 +119,7 @@ def post_image(request):
         image = cv.imdecode(arr, -1) 
         
         solution=Solution('Oily', 'Golden')
-        result=solution.geminiResponce(image=image)
+        result=solution.geminiResponse(image=image)
         
         return Response({
             'image_data': posts_serializer.data,

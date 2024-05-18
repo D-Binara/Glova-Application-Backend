@@ -1,7 +1,5 @@
 import os
 import google.generativeai as genai
-from langchain.prompts import PromptTemplate
-import PIL
 from dotenv import load_dotenv
 
 load_dotenv(".env")
@@ -9,7 +7,7 @@ load_dotenv(".env")
 
 class Solution(object):
     def __init__(self, skinType : str, skinTone : str) -> None:
-        genai.configure(api_key="AIzaSyBUd99N6xQQmy-233yhwEJnLXH_4oNRJzE")
+        genai.configure(api_key="AIzaSyDzWH1iqE9S3kg1L-IS-en9CgEoD08lcow")
         
         generation_config={
                         'temperature':0.01, 
@@ -41,17 +39,15 @@ class Solution(object):
         
         self._model = genai.GenerativeModel('gemini-pro-vision')
         
-        self._skinType=skinType
-        self._skinTone=skinTone
-        self._prompt= "Identify this skin disease on this picture and assume that this skin disease on a {skinType} type {skinTone} skin. please generate a complete description about the disease, why this disease occurs and genarate that ways can be use to prevent and avoid this skin disease at descriptive manner."
-        self._template = PromptTemplate(input_variables=['skinType', 'skinTone'], 
-                                        template=self._prompt)
+        self._prompt=f"Please identify the this skin disease and make a daily routing for avoid this disease on {skinType} and {skinTone}"
+        
+        
           
                         
         
-    def geminiResponce(self, image : str) -> str:
+    def geminiResponse(self, image : str) -> str:
         try:
-            self._response=self._model.generate_content([self._template.format(skinType=self._skinType, skinTone=self._skinTone), image], stream=False)
+            self._response=self._model.generate_content([self._prompt, image], stream=False)
                 
             for chunk in self._response:
                 self._response_ = ''.join(chunk.text) 
