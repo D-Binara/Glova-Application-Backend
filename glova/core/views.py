@@ -1,17 +1,21 @@
 """
 This is the view of core module
 """
+import os
+
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from PIL import Image
+from pathlib import Path
+import google.generativeai as genai
+from django.conf import settings
 import urllib
 from cloudinary import uploader
 import numpy as np
 import cv2 as cv
-
 
 from .extract_text import extract_text_from_pdf
 from .gemini import Solution
@@ -20,7 +24,6 @@ from .serializers import ImageSerializer, PdfSerializer, MessageSerializer
 from .serializers import UserSerializer, DoctorSerializer
 from .gemini_api import model
 from requests.exceptions import ConnectionError
-
 
 # from .chat import get_response_medassist
 
@@ -107,27 +110,54 @@ def get_image(request):
 def post_image(request):
     posts_serializer = ImageSerializer(data=request.data)
     if posts_serializer.is_valid():
-        # Save the image
         posts_serializer.save()
-        file = request.data.get('picture')
-        upload_data = uploader.upload(file)
-        #print(upload_data)
-        img = upload_data['url']
-        
-        req = urllib.request.urlopen(img)
-        arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-        image = cv.imdecode(arr, -1) 
-        
-        solution=Solution('Oily', 'Golden')
-        result=solution.geminiResponse(image=image)
-        
-        return Response({
-            'image_data': posts_serializer.data,
-            'result': result
-        }, status=status.HTTP_201_CREATED)
+        image_path = posts_serializer.data['image']  # Assuming the ImageSerializer has a field 'image'
+        # full_image_path = os.path.join(settings.MEDIA_ROOT, str(image_path))
+        full_image_path = "H:/Glova-Application-Backend/glova/media/post_images/nsbm.jpg"
+
+        # Generate content using the model
+        prompt_parts = [
+            "input: ",
+            genai.upload_file(full_image_path),
+            "output: ",
+            "input: ",
+            "output: ",
+        ]
+
+        response = model.generate_content(prompt_parts)
+        print(response.text)
+        return Response({"generated_text": response.text}, status=status.HTTP_201_CREATED)
     else:
-        # If serializer validation fails, return the errors
+        print('error', posts_serializer.errors)
         return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# posts_serializer = ImageSerializer(data=request.data)
+#
+# if posts_serializer.is_valid():
+#     # Save the image
+#     posts_serializer.save()
+#
+#     file = request.data.get('picture')
+#     upload_data = uploader.upload(file)
+#     #print(upload_data)
+#     img = upload_data['url']
+#
+#     req = urllib.request.urlopen(img)
+#     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+#     image = cv.imdecode(arr, -1)
+#
+#     solution=Solution('Oily', 'Golden')
+#     result=solution.geminiResponse(image=image)
+#
+#     return Response({
+#         'image_data': posts_serializer.data,
+#         'result': result
+#     }, status=status.HTTP_201_CREATED)
+# else:
+#     # If serializer validation fails, return the errors
+#     return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
 
 
 @api_view(['POST'])
@@ -151,7 +181,8 @@ def post_pdf(request):
 
             if post_serializer.is_valid():
                 post_serializer.save()
-                return Response({"pdf_data": post_serializer.data, "response": response}, status=status.HTTP_201_CREATED)
+                return Response({"pdf_data": post_serializer.data, "response": response},
+                                status=status.HTTP_201_CREATED)
             else:
                 return Response(post_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

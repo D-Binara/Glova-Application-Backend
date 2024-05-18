@@ -8,7 +8,7 @@ load_dotenv(".env")
 class Solution(object):
     def __init__(self, skinType : str, skinTone : str) -> None:
         genai.configure(api_key="AIzaSyDzWH1iqE9S3kg1L-IS-en9CgEoD08lcow")
-        
+
         generation_config={
                         'temperature':0.01, 
                         'max_output_tokens': 300
